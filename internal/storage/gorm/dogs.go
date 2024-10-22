@@ -8,17 +8,17 @@ import (
 type ShepherdDogs struct {
 	gorm.Model
 	name            string
-	BreedID         uint
+	BreedID         uint `gorm:"index"`
 	Breed           DictBreed
 	Age             int
-	GenderID        uint
+	GenderID        uint `gorm:"index"`
 	Gender          DictGender
 	WeightG         int
 	HeightMm        int
-	CoatID          uint
+	CoatID          uint `gorm:"index"`
 	Coat            DictCoat
 	MicrochipNumber int
-	OwnerID         uint
+	OwnerID         uint `gorm:"index"`
 	Owner           Owner
 	Vaccinated      bool
 	DateOfBirth     time.Time
