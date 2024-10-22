@@ -1,12 +1,19 @@
 package http
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/KennyMacCormik/HerdMaster/internal/network/http/routes"
+	"github.com/gin-gonic/gin"
+)
 
 func initGin(MaxConn int) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(clientConnLimiter(MaxConn))
 	_ = router.SetTrustedProxies(nil)
+
+	routes.DogsHandlers(router)
+	routes.OwnersHandlers(router)
+
 	return router
 }
 

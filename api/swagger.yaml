@@ -36,6 +36,15 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - id
+                  - created_at
+                  - updated_at
+                  - name
+                  - email
+                  - phone
+                  - coat_id
+                  - address_id
                 properties:
                   id:
                     type: integer
@@ -58,6 +67,7 @@ paths:
                     example: "Alex Ivanov"
                   email:
                     type: string
+                    format: email
                     description: "Email address"
                     example: "owners.email@gmail.com"
                   phone:
