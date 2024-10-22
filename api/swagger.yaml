@@ -134,7 +134,7 @@ paths:
             format: int64
             example: 14
       responses:
-        '200':
+        '204':
           description: Successful operation
         '400':
           $ref: "#/components/responses/InvalidRequest"
@@ -334,7 +334,7 @@ paths:
             format: int64
             example: 21
       responses:
-        '200':
+        '204':
           description: Successful operation
         '400':
           $ref: "#/components/responses/InvalidRequest"
