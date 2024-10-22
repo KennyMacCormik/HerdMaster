@@ -25,19 +25,19 @@ func handleValidatorError(c Config, err error) string {
 	errStr := ""
 
 	for _, v := range valErr {
-		tag := reflectActualTag(c, v.StructField())
+		tag, env := reflectActualTag(c, v.StructField())
 		if tag == "" {
 			tag = "err reflect tag"
 		}
-		errStr += fmt.Sprintf("field '%s' value '%s' invalid, '%s' expected; ",
-			v.StructField(), v.Value(), tag)
+		errStr += fmt.Sprintf("env '%s' value '%s' invalid, '%s' expected; ",
+			env, v.Value(), tag)
 	}
 	errStr = strings.Trim(errStr, " ")
 
 	return errStr
 }
 
-func reflectActualTag(c Config, sf string) string {
+func reflectActualTag(c Config, sf string) (string, string) {
 	ref := reflect.TypeOf(c)
 
 	for i := 0; i < ref.NumField(); i++ {
@@ -47,11 +47,11 @@ func reflectActualTag(c Config, sf string) string {
 			for j := 0; j < field.Type.NumField(); j++ {
 				intFieldName := field.Type.Field(j)
 				if intFieldName.Name == sf {
-					return intFieldName.Tag.Get("validate")
+					return intFieldName.Tag.Get("validate"), intFieldName.Tag.Get("env")
 				}
 			}
 		}
 	}
 
-	return ""
+	return "", ""
 }

@@ -7,21 +7,21 @@ import (
 )
 
 type Network struct {
-	// Env HM_NET_HOST. Address to listen. Default 0.0.0.0
-	Host string `mapstructure:"net_host" validate:"ip4_addr"`
-	// Env HM_NET_PORT. Port to listen. Default 8080
-	Port int `mapstructure:"net_port" validate:"numeric,gt=1024,lt=65536"`
-	// Env HM_NET_MAX_CONN. Maximum simultaneously working connections. Default runtime.NumCPU()
-	MaxConn int `mapstructure:"net_max_conn" validate:"numeric,gte=0"`
-	// Env HM_NET_TIMEOUT. Idle connection timeout. Min 100 ms. Default 1 s
-	Timeout time.Duration `mapstructure:"net_timeout" validate:"min=100ms"`
+	// Address to listen. Default 0.0.0.0
+	Host string `mapstructure:"net_host" validate:"ip4_addr|hostname_rfc1123" env:"HM_NET_HOST"`
+	// Port to listen. Default 8080
+	Port int `mapstructure:"net_port" validate:"numeric,gt=1024,lt=65536" env:"HM_NET_PORT"`
+	// Maximum simultaneously working connections. Default runtime.NumCPU()
+	MaxConn int `mapstructure:"net_max_conn" validate:"numeric,gte=0" env:"HM_NET_MAX_CONN"`
+	// Idle connection timeout. Min 100 ms. Default 1 s
+	Timeout time.Duration `mapstructure:"net_timeout" validate:"min=100ms" env:"HM_NET_TIMEOUT"`
 }
 
 type Logging struct {
-	// Env HM_LOG_FORMAT. Log format. Default text
-	Format string `mapstructure:"log_format" validate:"oneof=text json"`
-	// Env HM_LOG_LEVEL. Log level. Default info
-	Level string `mapstructure:"log_level" validate:"oneof=debug info warn error"`
+	// Log format. Default text
+	Format string `mapstructure:"log_format" validate:"oneof=text json" env:"HM_LOG_FORMAT"`
+	// Log level. Default info
+	Level string `mapstructure:"log_level" validate:"oneof=debug info warn error" env:"HM_LOG_LEVEL"`
 }
 
 type Config struct {
