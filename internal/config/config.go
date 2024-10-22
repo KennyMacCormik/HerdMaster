@@ -24,9 +24,17 @@ type Logging struct {
 	Level string `mapstructure:"log_level" validate:"oneof=debug info warn error" env:"HM_LOG_LEVEL"`
 }
 
+type Database struct {
+	// DB uri. Example postgresql://user:secret@host:5432/repos
+	ConnString string `mapstructure:"db_uri" validate:"required,uri" env:"HM_DB_URI"`
+	// Whether apply auto migrations or not. Default true
+	AutoMigrate bool `mapstructure:"auto_migrate" validate:"boolean" env:"HM_DB_AUTO_MIGRATE"`
+}
+
 type Config struct {
-	Net Network `mapstructure:",squash"`
-	Log Logging `mapstructure:",squash"`
+	Net Network  `mapstructure:",squash"`
+	Log Logging  `mapstructure:",squash"`
+	DB  Database `mapstructure:",squash"`
 }
 
 func New() (Config, error) {

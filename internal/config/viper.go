@@ -6,6 +6,13 @@ import (
 	"strconv"
 )
 
+func setDatabaseEnv() {
+	_ = viper.BindEnv("db_uri")
+
+	viper.SetDefault("auto_migrate", "true")
+	_ = viper.BindEnv("auto_migrate")
+}
+
 func setNetworkEnv() {
 	viper.SetDefault("net_host", "0.0.0.0")
 	_ = viper.BindEnv("net_host")
@@ -22,10 +29,10 @@ func setNetworkEnv() {
 
 func setLoggingEnv() {
 	viper.SetDefault("log_format", "text")
-	_ = viper.BindEnv("format")
+	_ = viper.BindEnv("log_format")
 
 	viper.SetDefault("log_level", "info")
-	_ = viper.BindEnv("level")
+	_ = viper.BindEnv("log_level")
 }
 
 func loadEnv(c *Config) error {
@@ -33,6 +40,7 @@ func loadEnv(c *Config) error {
 
 	setNetworkEnv()
 	setLoggingEnv()
+	setDatabaseEnv()
 
 	viper.AutomaticEnv()
 	return viper.Unmarshal(c)

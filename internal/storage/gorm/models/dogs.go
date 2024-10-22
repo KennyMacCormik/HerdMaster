@@ -1,11 +1,11 @@
-package gorm
+package models
 
 import (
 	"gorm.io/gorm"
 	"time"
 )
 
-type ShepherdDogs struct {
+type ShepherdDog struct {
 	gorm.Model
 	name            string
 	BreedID         uint `gorm:"index"`
