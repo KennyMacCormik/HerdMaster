@@ -24,10 +24,13 @@ func (s *SqLite) Close() error {
 func New(conf config.Config) (*SqLite, error) {
 	sql := SqLite{}
 
-	db, err := gorm.Open(sqlite.Open(conf.DB.ConnString), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(conf.DB.ConnString), &gorm.Config{
+		PrepareStmt: true,
+	})
 	if err != nil {
 		return nil, err
 	}
+	db.Exec("PRAGMA foreign_keys = ON;")
 
 	if conf.DB.AutoMigrate {
 		err = db.AutoMigrate(&models.Owner{}, &models.ShepherdDog{})
