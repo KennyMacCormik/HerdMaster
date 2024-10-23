@@ -20,21 +20,22 @@ type Address struct {
 }
 
 type DictCountry struct {
-	ID   uint `gorm:"primary_key"`
-	Name string
-	Code string
+	ID   uint   `gorm:"autoIncrement"`
+	Name string `gorm:"unique;not null;uniqueIndex:idx_name_code"`
+	Code string `gorm:"unique;not null;uniqueIndex:idx_name_code;check:length(Code) < 4"`
 }
 
 type DictState struct {
-	ID        uint `gorm:"primary_key"`
-	Name      string
-	CountryID uint `gorm:"index"`
+	ID        uint   `gorm:"autoIncrement"`
+	Name      string `gorm:"not null;uniqueIndex:idx_name_code_country_id"`
+	Code      string `gorm:"not null;uniqueIndex:idx_name_code_country_id;check:length(Code) < 6"`
+	CountryID uint   `gorm:"not null;uniqueIndex:idx_name_code_country_id"`
 	Country   DictCountry
 }
 
 type DictCity struct {
-	ID      uint `gorm:"primary_key"`
-	Name    string
-	StateID uint `gorm:"index"`
+	ID      uint   `gorm:"autoIncrement"`
+	Name    string `gorm:"not null;uniqueIndex:idx_name_state_id"`
+	StateID uint   `gorm:"not null;uniqueIndex:idx_name_state_id"`
 	State   DictState
 }

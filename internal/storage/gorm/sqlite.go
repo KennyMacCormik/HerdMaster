@@ -3,6 +3,7 @@ package gorm
 import (
 	"fmt"
 	"github.com/KennyMacCormik/HerdMaster/internal/config"
+	"github.com/KennyMacCormik/HerdMaster/internal/storage/gorm/dict_tables"
 	"github.com/KennyMacCormik/HerdMaster/internal/storage/gorm/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,12 +28,21 @@ func New(conf config.Config) (*SqLite, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if conf.DB.AutoMigrate {
 		err = db.AutoMigrate(&models.Owner{}, &models.ShepherdDog{})
 		if err != nil {
 			return nil, err
 		}
 	}
+
+	if conf.DB.AutoFillDict {
+		dict_tables.FillDictCountries(db)
+		dict_tables.FillDictStates(db)
+		dict_tables.FillDictCities(db)
+	}
+
+	sql.db = db
 
 	return &sql, nil
 }

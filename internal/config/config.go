@@ -29,6 +29,8 @@ type Database struct {
 	ConnString string `mapstructure:"db_uri" validate:"required,uri" env:"HM_DB_URI"`
 	// Whether apply auto migrations or not. Default true
 	AutoMigrate bool `mapstructure:"auto_migrate" validate:"boolean" env:"HM_DB_AUTO_MIGRATE"`
+	// Whether fill dictionary tables or not. Default true
+	AutoFillDict bool `mapstructure:"auto_fill_dict" validate:"boolean" env:"HM_DB_AUTO_FILL_DICT"`
 }
 
 type Config struct {

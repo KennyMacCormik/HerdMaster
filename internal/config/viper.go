@@ -11,6 +11,9 @@ func setDatabaseEnv() {
 
 	viper.SetDefault("auto_migrate", "true")
 	_ = viper.BindEnv("auto_migrate")
+
+	viper.SetDefault("auto_fill_dict", "true")
+	_ = viper.BindEnv("auto_fill_dict")
 }
 
 func setNetworkEnv() {
