@@ -1,4 +1,4 @@
-module github.com/KennyMacCormik/HerdMaster/pkg/validate/v0.1.0
+module github.com/KennyMacCormik/HerdMaster
 
 go 1.23.4
 
