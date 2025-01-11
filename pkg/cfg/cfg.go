@@ -48,7 +48,7 @@ func NewCustomConfig(conf any) error {
 		return err
 	}
 
-	if err := val.ValInstance.ValidateStruct(conf); err != nil {
+	if err := val.ValInstance.ValidateStruct(&conf); err != nil {
 		return err
 	}
 
