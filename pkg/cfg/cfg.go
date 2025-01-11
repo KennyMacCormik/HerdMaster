@@ -9,7 +9,7 @@ func init() {
 }
 
 type DefaultConfig struct {
-	Log loggingConfig
+	Log loggingConfig `mapstructure:",squash"`
 }
 
 type loggingConfig struct {
