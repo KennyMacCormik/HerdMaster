@@ -1,6 +1,9 @@
 package cfg
 
-import "github.com/spf13/viper"
+import (
+	"github.com/KennyMacCormik/HerdMaster/pkg/val"
+	"github.com/spf13/viper"
+)
 
 func init() {
 	viper.SetEnvPrefix("hw")
@@ -29,9 +32,13 @@ func setLoggingEnv() {
 }
 
 func NewDefaultConfig(conf *DefaultConfig) error {
-	err := viper.Unmarshal(conf)
-	if err != nil {
+	if err := viper.Unmarshal(conf); err != nil {
 		return err
 	}
+
+	if err := val.ValInstance.ValidateStruct(conf); err != nil {
+		return err
+	}
+
 	return nil
 }
