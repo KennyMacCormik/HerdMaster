@@ -9,10 +9,10 @@ func init() {
 }
 
 type DefaultConfig struct {
-	Log LoggingConfig
+	Log loggingConfig
 }
 
-type LoggingConfig struct {
+type loggingConfig struct {
 	// HM_LOG_FORMAT. Default text
 	Format string `mapstructure:"log_format" validate:"oneof=text json"`
 	// HM_LOG_LEVEL. Default info
