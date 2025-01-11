@@ -20,7 +20,6 @@ type LoggingConfig struct {
 }
 
 func setLoggingEnv() {
-
 	viper.SetDefault("log_format", "text")
 	_ = viper.BindEnv("log_format")
 
