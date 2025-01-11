@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	viper.SetEnvPrefix("hw")
+	viper.SetEnvPrefix("hm")
 	setLoggingEnv()
 
 	viper.AutomaticEnv()
@@ -36,7 +36,7 @@ func NewDefaultConfig(conf *DefaultConfig) error {
 		return err
 	}
 
-	if err := val.ValInstance.ValidateStruct(conf); err != nil {
+	if err := val.ValInstance.ValidateStruct(*conf); err != nil {
 		return err
 	}
 
