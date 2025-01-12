@@ -42,15 +42,3 @@ func NewDefaultConfig(conf *DefaultConfig) error {
 
 	return nil
 }
-
-func NewCustomConfig(conf any) error {
-	if err := viper.Unmarshal(conf); err != nil {
-		return err
-	}
-
-	if err := val.ValInstance.ValidateStruct(&conf); err != nil {
-		return err
-	}
-
-	return nil
-}
