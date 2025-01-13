@@ -3,13 +3,6 @@
 
 The `val` package provides a centralized and encapsulated validation mechanism using the [`go-playground/validator`](https://pkg.go.dev/github.com/go-playground/validator/v10) library. It is designed to ensure data integrity across the application by validating structures and variables based on predefined rules and tags.
 
-## Features
-
-1. **Singleton Validator Instance**: Implements a singleton pattern for the validator to leverage caching and thread safety.
-2. **Validation for Variables**: Supports validation of individual variables using custom tags.
-3. **Validation for Structures**: Enables validation of Go structs based on `validator` tags.
-4. **Error Formatting**: Formats validation errors for better debugging and readability.
-
 ## Initialization
 
 The package initializes a singleton instance of the validator during package initialization (`init` function). This ensures the validator is ready for use throughout the application without additional setup.
