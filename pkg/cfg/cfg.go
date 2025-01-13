@@ -47,12 +47,12 @@ func setLoggingEnv() {
 	_ = viper.BindEnv("log_level")
 }
 
-func NewDefaultConfig(conf *DefaultConfig) error {
+func NewDefaultConfig(conf *DefaultConfig, val *val.GlobalValidator) error {
 	if err := viper.Unmarshal(conf); err != nil {
 		return err
 	}
 
-	if err := val.ValInstance.ValidateStruct(*conf); err != nil {
+	if err := val.ValidateStruct(*conf); err != nil {
 		return err
 	}
 
