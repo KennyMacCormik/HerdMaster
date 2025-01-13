@@ -36,18 +36,18 @@ Example:
 
 ```go
 type User struct {
-    Name  string `validate:"required"`
-    Email string `validate:"required,email"`
-    Age   int    `validate:"gte=18"`
+Name  string `validate:"required"`
+Email string `validate:"required,email"`
+Age   int    `validate:"gte=18"`
 }
 
 func main() {
-    user := User{Name: "John Doe", Email: "invalid-email", Age: 15}
-    validator := val.GetValidator()
+user := User{Name: "John Doe", Email: "invalid-email", Age: 15}
+validator := val.GetValidator()
 
-    if err := validator.ValidateStruct(user); err != nil {
-        log.Fatalf("Validation failed: %v", err)
-    }
+if err := validator.ValidateStruct(user); err != nil {
+log.Fatalf("Validation failed: %v", err)
+}
 }
 ```
 
@@ -61,13 +61,13 @@ Example:
 
 ```go
 func main() {
-    validator := val.GetValidator()
+validator := val.GetValidator()
 
-    // Validate if a value is an email
-    email := "invalid-email"
-    if err := validator.ValidateWithTag(email, "email"); err != nil {
-        log.Printf("Invalid email: %v", err)
-    }
+// Validate if a value is an email
+email := "invalid-email"
+if err := validator.ValidateWithTag(email, "email"); err != nil {
+log.Printf("Invalid email: %v", err)
+}
 }
 ```
 
@@ -94,9 +94,9 @@ func (v *GlobalValidator) ValidateStruct(s any) error
 Validates a struct against the `validator` tags defined in its fields.
 
 - **Parameters**:
-    - `s` (`any`): The struct instance to validate.
+  - `s` (`any`): The struct instance to validate.
 - **Returns**:
-    - `error`: A formatted error (`validator.ValidationErrors`) if validation fails; `nil` otherwise.
+  - `error`: A formatted error (`validator.ValidationErrors`) if validation fails; `nil` otherwise.
 
 ---
 
@@ -109,10 +109,10 @@ func (v *GlobalValidator) ValidateWithTag(variable any, tag string) error
 Validates a single variable against a custom validation tag.
 
 - **Parameters**:
-    - `variable` (`any`): The variable to validate.
-    - `tag` (`string`): The validation rule to apply (e.g., `required`, `email`, `numeric`).
+  - `variable` (`any`): The variable to validate.
+  - `tag` (`string`): The validation rule to apply (e.g., `required`, `email`, `numeric`).
 - **Returns**:
-    - `error`: An error if validation fails; `nil` otherwise.
+  - `error`: An error if validation fails; `nil` otherwise.
 
 ---
 
@@ -121,16 +121,15 @@ Validates a single variable against a custom validation tag.
 #### `handleValidatorError`
 
 ```go
-func handleValidatorError(s any, err error) error
+func handleValidatorError(err error) error
 ```
 
 Internal helper function to format validation errors into readable messages.
 
 - **Parameters**:
-    - `s` (`any`): The struct instance being validated.
-    - `err` (`error`): The error returned by the `validator` package.
+  - `err` (`error`): The error returned by the `validator` package.
 - **Returns**:
-    - `error`: A formatted error message with details about the failed fields.
+  - `error`: A formatted error message with details about the failed fields.
 
 ## Example Scenarios
 
@@ -167,3 +166,5 @@ func main() {
     }
 }
 ```
+
+---

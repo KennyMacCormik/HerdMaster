@@ -16,14 +16,13 @@ type GlobalValidator struct {
 	validator *validator.Validate
 }
 
-// newValidator initialize validator sinleton.
+// newValidator initialize validator singleton.
 // See https://pkg.go.dev/github.com/go-playground/validator/v10#hdr-Singleton for details
 func newValidator() GlobalValidator {
 	return GlobalValidator{validator: validator.New(validator.WithRequiredStructEnabled())}
 }
 
 // GetValidator returns a pointer to the validator singleton.
-// Used for DI compliance.
 // Note: The returned pointer shouldn't be replaced or re-initialized by consumers.
 func GetValidator() *GlobalValidator {
 	return &singleton
@@ -32,7 +31,7 @@ func GetValidator() *GlobalValidator {
 // ValidateWithTag accepts validator tag according to https://pkg.go.dev/github.com/go-playground/validator/v10#readme-baked-in-validations
 func (v *GlobalValidator) ValidateWithTag(variable any, tag string) error {
 	if err := v.validator.Var(variable, tag); err != nil {
-		return err
+		return handleValidatorError(err)
 	}
 	return nil
 }
@@ -40,13 +39,13 @@ func (v *GlobalValidator) ValidateWithTag(variable any, tag string) error {
 // ValidateStruct validates structure based on structure's tags
 func (v *GlobalValidator) ValidateStruct(s any) error {
 	if err := v.validator.Struct(s); err != nil {
-		return handleValidatorError(s, err)
+		return handleValidatorError(err)
 	}
 	return nil
 }
 
 // handleValidatorError used to format validator's errors
-func handleValidatorError(s any, err error) error {
+func handleValidatorError(err error) error {
 	var valErr validator.ValidationErrors
 	if errors.As(err, &valErr) {
 		return valErr
