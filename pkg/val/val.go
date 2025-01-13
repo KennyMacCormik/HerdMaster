@@ -6,6 +6,12 @@ import (
 	"sync"
 )
 
+type Validator interface {
+	ValidateWithTag(variable any, tag string) error
+	ValidateStruct(s any) error
+	RegisterValidation(tag string, fn validator.Func) error
+}
+
 var (
 	singleton     GlobalValidator
 	validatorOnce sync.Once
@@ -22,9 +28,8 @@ func newValidator() GlobalValidator {
 	return GlobalValidator{validator: validator.New(validator.WithRequiredStructEnabled())}
 }
 
-// GetValidator returns a pointer to the validator singleton.
-// Note: The returned pointer shouldn't be replaced or re-initialized by consumers.
-func GetValidator() *GlobalValidator {
+// GetValidator returns a Validator interface
+func GetValidator() Validator {
 	validatorOnce.Do(func() {
 		singleton = newValidator()
 	})
@@ -45,6 +50,18 @@ func (v *GlobalValidator) ValidateStruct(s any) error {
 		return handleValidatorError(err)
 	}
 	return nil
+}
+
+// RegisterValidation adds a custom validation function for a given tag.
+// Example:
+// validator := GetValidator()
+//
+//	err := validator.RegisterValidation("is-even", func(fl validator.FieldLevel) bool {
+//	    value := fl.Field().Int()
+//	    return value%2 == 0
+//	})
+func (v *GlobalValidator) RegisterValidation(tag string, fn validator.Func) error {
+	return v.validator.RegisterValidation(tag, fn)
 }
 
 // handleValidatorError used to format validator's errors
