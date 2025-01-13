@@ -8,6 +8,7 @@ import (
 func init() {
 	viper.SetEnvPrefix("hm")
 	setLoggingEnv()
+	setGrpcEnv()
 	viper.AutomaticEnv()
 }
 
