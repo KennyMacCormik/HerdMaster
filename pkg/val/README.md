@@ -3,6 +3,13 @@
 
 The `val` package provides a centralized and encapsulated validation mechanism using the [`go-playground/validator`](https://pkg.go.dev/github.com/go-playground/validator/v10) library. It is designed to ensure data integrity across the application by validating structures and variables based on predefined rules and tags.
 
+## Features
+
+1. **Singleton Validator Instance**: Implements a singleton pattern for the validator to leverage caching and thread safety.
+2. **Validation for Variables**: Supports validation of individual variables using custom tags.
+3. **Validation for Structures**: Enables validation of Go structs based on `validator` tags.
+4. **Error Formatting**: Formats validation errors for better debugging and readability.
+
 ## Initialization
 
 The package initializes a singleton instance of the validator during package initialization (`init` function). This ensures the validator is ready for use throughout the application without additional setup.
@@ -29,18 +36,18 @@ Example:
 
 ```go
 type User struct {
-Name  string `validate:"required"`
-Email string `validate:"required,email"`
-Age   int    `validate:"gte=18"`
+    Name  string `validate:"required"`
+    Email string `validate:"required,email"`
+    Age   int    `validate:"gte=18"`
 }
 
 func main() {
-user := User{Name: "John Doe", Email: "invalid-email", Age: 15}
-validator := val.GetValidator()
+    user := User{Name: "John Doe", Email: "invalid-email", Age: 15}
+    validator := val.GetValidator()
 
-if err := validator.ValidateStruct(user); err != nil {
-log.Fatalf("Validation failed: %v", err)
-}
+    if err := validator.ValidateStruct(user); err != nil {
+        log.Fatalf("Validation failed: %v", err)
+    }
 }
 ```
 
@@ -54,13 +61,13 @@ Example:
 
 ```go
 func main() {
-validator := val.GetValidator()
+    validator := val.GetValidator()
 
-// Validate if a value is an email
-email := "invalid-email"
-if err := validator.ValidateWithTag(email, "email"); err != nil {
-log.Printf("Invalid email: %v", err)
-}
+    // Validate if a value is an email
+    email := "invalid-email"
+    if err := validator.ValidateWithTag(email, "email"); err != nil {
+        log.Printf("Invalid email: %v", err)
+    }
 }
 ```
 
@@ -105,7 +112,7 @@ Validates a single variable against a custom validation tag.
   - `variable` (`any`): The variable to validate.
   - `tag` (`string`): The validation rule to apply (e.g., `required`, `email`, `numeric`).
 - **Returns**:
-  - `error`: A formatted error (`validator.ValidationErrors`) if validation fails; `nil` otherwise.
+  - `error`: An error if validation fails; `nil` otherwise.
 
 ---
 
@@ -159,5 +166,17 @@ func main() {
     }
 }
 ```
+
+---
+
+## Key Notes
+
+1. **Singleton Design**: The validator is thread-safe and should be used as a singleton to leverage caching benefits.
+2. **Validation Tags**: Refer to the [`go-playground/validator`](https://pkg.go.dev/github.com/go-playground/validator/v10#readme-baked-in-validations) documentation for a complete list of supported tags.
+
+## Limitations
+
+1. **Dependency on `go-playground/validator`**: Any changes to the underlying library may require updates to the wrapper.
+2. **Error Formatting**: The current implementation does not support internationalization (i18n) for error messages.
 
 ---

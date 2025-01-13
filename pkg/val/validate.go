@@ -3,13 +3,13 @@ package val
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"sync"
 )
 
-func init() {
-	singleton = newValidator()
-}
-
-var singleton GlobalValidator
+var (
+	singleton     GlobalValidator
+	validatorOnce sync.Once
+)
 
 // GlobalValidator is a wrapper around a validator object.
 type GlobalValidator struct {
@@ -25,6 +25,9 @@ func newValidator() GlobalValidator {
 // GetValidator returns a pointer to the validator singleton.
 // Note: The returned pointer shouldn't be replaced or re-initialized by consumers.
 func GetValidator() *GlobalValidator {
+	validatorOnce.Do(func() {
+		singleton = newValidator()
+	})
 	return &singleton
 }
 
