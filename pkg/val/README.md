@@ -112,7 +112,7 @@ Validates a single variable against a custom validation tag.
   - `variable` (`any`): The variable to validate.
   - `tag` (`string`): The validation rule to apply (e.g., `required`, `email`, `numeric`).
 - **Returns**:
-  - `error`: An error if validation fails; `nil` otherwise.
+  - `error`: A formatted error (`validator.ValidationErrors`) if validation fails; `nil` otherwise.
 
 ---
 
