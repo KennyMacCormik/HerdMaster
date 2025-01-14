@@ -3,7 +3,7 @@ module github.com/KennyMacCormik/HerdMaster
 go 1.23.4
 
 require (
-	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-playground/validator/v10 v10.24.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 )

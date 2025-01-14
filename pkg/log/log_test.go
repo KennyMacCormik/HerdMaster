@@ -2,6 +2,7 @@ package log
 
 import (
 	"bytes"
+	"github.com/KennyMacCormik/HerdMaster/pkg/cfg"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -60,7 +61,7 @@ func TestDefaultLogger(t *testing.T) {
 	const defaultLogMessage = "Default logger log"
 
 	output := captureOutput(func() {
-		logger := defaultLogger()
+		logger := DefaultLogger()
 		logger.Info(defaultLogMessage)
 	})
 
@@ -122,4 +123,82 @@ func TestNewLoggerWithConf_JSON(t *testing.T) {
 
 	require.NotEmpty(t, output, "expected info log output in JSON format, got empty output")
 	assert.Contains(t, output, `"msg":"Test info log"`, "expected JSON-formatted log message to be in the output")
+}
+
+func TestLoggingConfigIntegration_DefaultValues(t *testing.T) {
+	entry := cfg.ConfigEntry{
+		Config: &LoggingConfig{},
+		BindArray: []cfg.BindValue{
+			{ValName: "log_format", DefaultVal: "text"},
+			{ValName: "log_level", DefaultVal: "info"},
+		},
+	}
+
+	err := cfg.RegisterConfig("log", entry)
+	assert.NoError(t, err, "expected no error when registering logging configuration")
+
+	err = cfg.NewConfig()
+	assert.NoError(t, err, "expected no error when initializing configuration")
+
+	config, ok := cfg.GetConfig("log")
+	assert.True(t, ok, "expected to find registered logging configuration")
+
+	typedConfig, ok := config.(*LoggingConfig)
+	assert.True(t, ok, "expected config to be of type LoggingConfig")
+	assert.Equal(t, "text", typedConfig.Format, "expected default format to be 'text'")
+	assert.Equal(t, "info", typedConfig.Level, "expected default level to be 'info'")
+}
+
+func TestLoggingConfigIntegration_EnvironmentOverrides(t *testing.T) {
+	entry := cfg.ConfigEntry{
+		Config: &LoggingConfig{},
+		BindArray: []cfg.BindValue{
+			{ValName: "log_format", DefaultVal: "text"},
+			{ValName: "log_level", DefaultVal: "info"},
+		},
+	}
+
+	err := cfg.RegisterConfig("log", entry)
+	assert.NoError(t, err, "expected no error when registering logging configuration")
+
+	t.Setenv("HM_LOG_FORMAT", "json")
+	t.Setenv("HM_LOG_LEVEL", "debug")
+
+	err = cfg.NewConfig()
+	assert.NoError(t, err, "expected no error when initializing configuration")
+
+	config, ok := cfg.GetConfig("log")
+	assert.True(t, ok, "expected to find registered logging configuration")
+
+	typedConfig, ok := config.(*LoggingConfig)
+	assert.True(t, ok, "expected config to be of type LoggingConfig")
+	assert.Equal(t, "json", typedConfig.Format, "expected format to be overridden to 'json'")
+	assert.Equal(t, "debug", typedConfig.Level, "expected level to be overridden to 'debug'")
+}
+
+func TestLoggingConfigIntegration_SingletonBehavior(t *testing.T) {
+	entry := cfg.ConfigEntry{
+		Config: &LoggingConfig{},
+		BindArray: []cfg.BindValue{
+			{ValName: "log_format", DefaultVal: "text"},
+			{ValName: "log_level", DefaultVal: "info"},
+		},
+	}
+
+	err := cfg.RegisterConfig("log", entry)
+	assert.NoError(t, err, "expected no error when registering logging configuration")
+
+	err = cfg.NewConfig()
+	assert.NoError(t, err, "expected no error when initializing configuration")
+
+	config, ok := cfg.GetConfig("log")
+	assert.True(t, ok, "expected to find registered logging configuration")
+
+	typedConfig, ok := config.(*LoggingConfig)
+	assert.True(t, ok, "expected config to be of type LoggingConfig")
+
+	logger1 := GetLogger(typedConfig.Level, typedConfig.Format)
+	logger2 := GetLogger(typedConfig.Level, typedConfig.Format)
+
+	assert.Equal(t, logger1, logger2, "expected singleton logger instance")
 }

@@ -23,6 +23,19 @@ var (
 	loggerOnce      sync.Once
 )
 
+type LoggerOption func(*loggerConfig)
+
+type loggerConfig struct {
+	level  string
+	format string
+}
+
+// LoggingConfig is a structure ready for viper
+type LoggingConfig struct {
+	Format string `mapstructure:"log_format" validate:"oneof=text json"`            // HM_LOG_FORMAT. Default text
+	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"` // HM_LOG_LEVEL. Default info
+}
+
 // GetLogger provides a singleton logger instance with specified level and format.
 func GetLogger(level, format string) *slog.Logger {
 	loggerOnce.Do(func() {
@@ -38,14 +51,14 @@ func newLogger(level, format string) *slog.Logger {
 		lg := newLoggerWithConf(level, format)
 		return lg
 	} else {
-		lg := defaultLogger()
+		lg := DefaultLogger()
 		lg.Info("config validation failed, running logger with default values", "level", defaultLogLevel, "format", defaultLogFormat)
 		return lg
 	}
 }
 
-// defaultLogger returns a logger with the default configuration (info level, JSON format).
-func defaultLogger() *slog.Logger {
+// DefaultLogger returns a logger with the default configuration (info level, JSON format).
+func DefaultLogger() *slog.Logger {
 	return newLoggerWithConf(defaultLogLevel, defaultLogFormat)
 }
 

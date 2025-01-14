@@ -1,202 +1,178 @@
+# val Package
 
-# `val` Package Documentation
+## Overview
+The `val` package provides a thread-safe validation mechanism using the `go-playground/validator/v10` library. It supports:
+- Struct-based validation.
+- Tag-based validation.
+- Custom validation rules.
 
-The `val` package provides a centralized validation mechanism for the application using the `go-playground/validator/v10` library. It ensures thread-safe, reusable validation with support for custom rules and abstraction via an interface.
-
----
+The package is designed as a singleton to ensure a single validator instance is used throughout the application, promoting efficiency and consistency.
 
 ## Features
+- **Thread-Safe Singleton**: Ensures only one validator instance is active.
+- **Struct Validation**: Validate structs based on predefined tags.
+- **Tag Validation**: Validate individual variables using custom tags.
+- **Custom Validation Rules**: Easily extend functionality by registering new validation rules.
 
-1. **Singleton Validator**: A thread-safe, globally available validator instance.
-2. **Struct Validation**: Validates struct fields using `validate` tags.
-3. **Tag-Based Validation**: Validates individual variables against custom tags.
-4. **Custom Validation Rules**: Allows registering custom validation functions.
-5. **Abstraction with Interface**: Exposes a `Validator` interface for decoupled and testable design.
-6. **Error Formatting**: Formats validation errors consistently.
+## Installation
 
----
+### Dependencies
+This package depends on:
+- `go-playground/validator/v10`
+- `github.com/stretchr/testify` (for testing purposes)
+
+Install dependencies using `go get`:
+```bash
+go get github.com/go-playground/validator/v10
+go get github.com/stretchr/testify
+```
+
+### Package Installation
+To install the `val` package:
+```bash
+go get github.com/KennyMacCormik/HerdMaster/pkg/val
+```
 
 ## Usage
+Below are examples of how to use the `val` package.
 
-### GetValidator
-
-```go
-func GetValidator() Validator
-```
-
-Returns the singleton instance of the `Validator` interface.
-
-#### Example:
-
-```go
-validator := GetValidator()
-
-type User struct {
-    Name  string `validate:"required"`
-    Email string `validate:"required,email"`
-}
-
-user := User{Name: "John Doe", Email: "john.doe@example.com"}
-
-err := validator.ValidateStruct(user)
-if err != nil {
-    fmt.Printf("Validation failed: %v\n", err)
-}
-```
-
----
-
-### ValidateStruct
-
-```go
-func (v *GlobalValidator) ValidateStruct(s any) error
-```
-
-Validates a struct based on `validate` tags defined on its fields.
-
-#### Example:
-
-```go
-type Product struct {
-    Name  string  `validate:"required"`
-    Price float64 `validate:"required,gt=0"`
-}
-
-product := Product{Name: "Laptop", Price: 1500.00}
-err := validator.ValidateStruct(product)
-if err != nil {
-    fmt.Printf("Validation errors: %v\n", err)
-}
-```
-
----
-
-### ValidateWithTag
-
-```go
-func (v *GlobalValidator) ValidateWithTag(variable any, tag string) error
-```
-
-Validates a variable against a specific validation tag.
-
-#### Example:
-
-```go
-err := validator.ValidateWithTag("test@example.com", "email")
-if err != nil {
-    fmt.Printf("Validation failed: %v\n", err)
-}
-```
-
----
-
-### RegisterValidation
-
-```go
-func (v *GlobalValidator) RegisterValidation(tag string, fn validator.Func) error
-```
-
-Registers a custom validation function for a given tag.
-
-#### Example:
-
-```go
-validator := GetValidator()
-
-err := validator.RegisterValidation("is-even", func(fl validator.FieldLevel) bool {
-    value := fl.Field().Int()
-    return value%2 == 0
-})
-
-if err != nil {
-    log.Fatalf("Failed to register custom validation: %v\n", err)
-}
-
-type Number struct {
-    Value int `validate:"is-even"`
-}
-
-num := Number{Value: 3}
-err = validator.ValidateStruct(num)
-if err != nil {
-    fmt.Printf("Validation failed: %v\n", err)
-}
-```
-
----
-
-### Error Handling
-
-The `handleValidatorError` function formats validation errors.
-
-#### Example:
-
-```go
-func handleValidatorError(err error) error {
-    var valErr validator.ValidationErrors
-    if errors.As(err, &valErr) {
-        return valErr
-    }
-    return fmt.Errorf("unexpected validation error: %w", err)
-}
-```
-
----
-
-## Integration
-
-This package is designed to work as a singleton, ensuring efficient and consistent validation across the application. Use it wherever validation logic is required.
-
----
-
-## Example
-
+### Struct Validation
 ```go
 package main
 
 import (
-    "fmt"
-    "your_project/val"
+	"fmt"
+	"github.com/KennyMacCormik/HerdMaster/pkg/val"
 )
 
+type User struct {
+	Name  string `validate:"required"`
+	Email string `validate:"required,email"`
+}
+
 func main() {
-    validator := val.GetValidator()
+	validator := val.GetValidator()
 
-    type User struct {
-        Name  string `validate:"required"`
-        Email string `validate:"required,email"`
-    }
+	user := User{
+		Name:  "John Doe",
+		Email: "john.doe@example.com",
+	}
 
-    user := User{Name: "", Email: "invalid-email"}
-
-    err := validator.ValidateStruct(user)
-    if err != nil {
-        fmt.Printf("Validation failed: %v\n", err)
-    }
+	if err := validator.ValidateStruct(user); err != nil {
+		fmt.Println("Validation failed:", err)
+	} else {
+		fmt.Println("Validation passed!")
+	}
 }
 ```
 
----
+### Tag Validation
+```go
+package main
 
-## Limitations
+import (
+	"fmt"
+	"github.com/KennyMacCormik/HerdMaster/pkg/val"
+)
 
-1. **Custom Rules**: Ensure custom rules are registered before use.
-2. **Error Interpretation**: Validation errors are returned in raw form, requiring custom formatting if needed.
+func main() {
+	validator := val.GetValidator()
 
----
-
-## Unit Tests
-
-The `val` package includes tests for:
-1. Singleton behavior (`GetValidator`)
-2. Struct and tag-based validation
-3. Custom validation rules
-4. Error handling
-
-Run the tests with:
-
-```bash
-go test ./... -v
+	email := "invalid-email"
+	if err := validator.ValidateWithTag(email, "email"); err != nil {
+		fmt.Println("Validation failed:", err)
+	} else {
+		fmt.Println("Validation passed!")
+	}
+}
 ```
 
----
+### Custom Validation
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/KennyMacCormik/HerdMaster/pkg/val"
+	"github.com/go-playground/validator/v10"
+)
+
+func main() {
+	validator := val.GetValidator()
+
+	// Register a custom validation
+	err := validator.RegisterValidation("is-even", func(fl validator.FieldLevel) bool {
+		return fl.Field().Int()%2 == 0
+	})
+
+	if err != nil {
+		fmt.Println("Error registering custom validation:", err)
+		return
+	}
+
+	type TestStruct struct {
+		Number int `validate:"is-even"`
+	}
+
+	test := TestStruct{Number: 4}
+	if err := validator.ValidateStruct(test); err != nil {
+		fmt.Println("Validation failed:", err)
+	} else {
+		fmt.Println("Validation passed!")
+	}
+}
+```
+
+## API Documentation
+
+### `Validator` Interface
+The `Validator` interface defines the following methods:
+```go
+type Validator interface {
+	ValidateWithTag(variable any, tag string) error
+	ValidateStruct(s any) error
+	RegisterValidation(tag string, fn validator.Func) error
+}
+```
+
+### Functions
+
+#### `GetValidator`
+Returns the singleton instance of the `Validator` interface.
+```go
+func GetValidator() Validator
+```
+
+#### `RegisterValidation`
+Registers a custom validation function for a specific tag.
+```go
+func (v *validatorStruct) RegisterValidation(tag string, fn validator.Func) error
+```
+
+#### `ValidateWithTag`
+Validates a variable using the provided tag.
+```go
+func (v *validatorStruct) ValidateWithTag(variable any, tag string) error
+```
+
+#### `ValidateStruct`
+Validates a struct based on its tags.
+```go
+func (v *validatorStruct) ValidateStruct(s any) error
+```
+
+## Type Description
+
+### `validatorStruct`
+The `validatorStruct` is a wrapper around the `go-playground/validator` and implements the `Validator` interface.
+
+### `Validator`
+An interface abstracting the validation functionality.
+
+## License
+This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/licenses/MIT) file for details.
+
+## Thanks
+Special thanks to the contributors and maintainers of:
+- [`go-playground/validator`](https://github.com/go-playground/validator)
+- [`testify`](https://github.com/stretchr/testify)
