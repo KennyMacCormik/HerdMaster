@@ -1,153 +1,149 @@
 
-# `log` Package Documentation
+# Log Package
 
-The `log` package provides a flexible, singleton-based logging system using the `log/slog` package. It supports configurable log levels and formats, with sensible defaults for fallback.
+## Overview
+
+The `log` package provides a simple, thread-safe singleton logger built on Go's `log/slog` package. It supports configurable logging levels, formats, and output destinations, ensuring flexibility for various use cases. By default, the logger is initialized with sensible defaults but allows customization through functional options.
 
 ## Features
 
-1. **Singleton Logger**: Ensures a single, globally accessible logger instance throughout the application.
-2. **Configurable Levels and Formats**:
-    - Supported levels: `debug`, `info`, `warn`, `error`
-    - Supported formats: `text`, `json`
-3. **Default Fallback**: Provides a default logger with `info` level and `json` format when configuration validation fails.
-4. **Validation**: Validates the provided level and format to prevent misconfiguration.
+- Thread-safe, singleton logger implementation.
+- Customizable logging levels (`debug`, `info`, `warn`, `error`).
+- Configurable logging formats (`json`, `text`).
+- Support for custom output destinations.
+- Default configurations ensuring a usable logger without prior setup.
 
----
+## Installation
+
+### Dependencies Installation
+
+This package relies on Go's standard library. Ensure you are using **Go 1.23** or later.
+
+### Package Installation
+
+Install the package using the following command:
+
+```sh
+go get github.com/KennyMacCormik/HerdMaster/pkg/log
+```
 
 ## Usage
 
-### GetLogger
-
-```go
-func GetLogger(level, format string) *slog.Logger
-```
-
-Returns a singleton logger instance with the specified log level and format. If called multiple times, the same instance is returned.
-
-#### Example:
-
-```go
-logger := log.GetLogger("debug", "json")
-logger.Debug("Debug message")
-```
-
----
-
-### DefaultLogger
-
-```go
-func defaultLogger() *slog.Logger
-```
-
-Returns a logger with the default configuration (`info` level, `json` format).
-
-#### Example:
-
-```go
-logger := defaultLogger()
-logger.Info("Default logger message")
-```
-
----
-
-### Configuration Validation
-
-#### validateLoggingConf
-
-```go
-func validateLoggingConf(level, format string) bool
-```
-
-Validates the specified log level and format. Returns `true` if valid, `false` otherwise.
-
-#### Example:
-
-```go
-valid := validateLoggingConf("info", "json")
-fmt.Println(valid) // Output: true
-```
-
----
-
-### Logger Creation
-
-#### newLogger
-
-```go
-func newLogger(level, format string) *slog.Logger
-```
-
-Creates a logger with the specified configuration. Falls back to the default logger if validation fails.
-
-#### Example:
-
-```go
-logger := newLogger("warn", "text")
-logger.Warn("Warning message")
-```
-
-#### newLoggerWithConf
-
-```go
-func newLoggerWithConf(level, format string) *slog.Logger
-```
-
-Creates a logger with validated configuration for the specified level and format.
-
----
-
-## Supported Log Levels
-
-- `debug`
-- `info`
-- `warn`
-- `error`
-
----
-
-## Supported Formats
-
-- `text`: Outputs logs in human-readable text format.
-- `json`: Outputs logs in JSON format.
-
----
-
-## Example Usage
+### Example: Default Logger
 
 ```go
 package main
 
 import (
-	"log"
+	"log/slog"
+	"github.com/KennyMacCormik/HerdMaster/pkg/log"
 )
 
 func main() {
-	logger := log.GetLogger("info", "json")
-	logger.Info("Application started")
+	logger, err := log.GetLogger()
+	if err != nil {
+		panic(err)
+	}
+	logger.Info("This is a default logger message")
 }
 ```
 
----
+### Example: Configuring Logger
 
-## Unit Tests
+```go
+package main
 
-The `log` package includes comprehensive unit tests to validate:
-1. Singleton behavior (`GetLogger`)
-2. Valid and invalid configurations (`validateLoggingConf`)
-3. Log output formats (`text`, `json`)
-4. Default fallback behavior
+import (
+	"bytes"
+	"log/slog"
+	"github.com/KennyMacCormik/HerdMaster/pkg/log"
+)
 
-Run the tests with:
-
-```bash
-go test ./... -v
+func main() {
+	output := &bytes.Buffer{}
+	logger, err := log.ConfigureLogger(
+		log.WithConfig("debug", "text"),
+		log.WithOutput(output),
+	)
+	if err != nil {
+		panic(err)
+	}
+	logger.Debug("This is a debug message")
+}
 ```
 
----
+### Note
 
-## Limitations
+The logger returned by `ConfigureLogger` **must be saved** and used for logging. This behavior is dictated by the immutability of `*slog.Logger` in the `slog` package.
 
-1. The logger configuration cannot be updated after the first call to `GetLogger`.
-2. The package does not support log rotation or external logging services (e.g., Elasticsearch).
+## API Documentation
 
----
+### Exported Functions
+
+#### `GetLogger()`
+
+```go
+func GetLogger() (*slog.Logger, error)
+```
+
+Returns the current logger instance. If the logger is uninitialized, it creates one with the default settings.
+
+#### `ConfigureLogger(options ...LoggerOption) (*slog.Logger, error)`
+
+Configures the logger with the provided options. Returns the updated logger instance.
+
+### Logger Configuration Options
+
+#### `WithDefault()`
+
+```go
+func WithDefault() LoggerOption
+```
+
+Sets the logger to use the default configuration (`info` level, `json` format).
+
+#### `WithConfig(level, format string)`
+
+```go
+func WithConfig(level, format string) LoggerOption
+```
+
+Allows specifying the logging level and format.
+
+#### `WithOutput(output io.Writer)`
+
+```go
+func WithOutput(output io.Writer) LoggerOption
+```
+
+Sets a custom output destination for the logger. Defaults to `os.Stdout` if `output` is `nil`.
+
+## Type Description
+
+### `LoggerOption`
+
+Represents a functional option for configuring the logger.
+
+### `loggerConfig`
+
+Internal configuration structure for the logger. Not exportable.
+
+### `LoggingConfig`
+
+```go
+type LoggingConfig struct {
+	Format string `mapstructure:"log_format" validate:"oneof=text json"`
+	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"`
+}
+```
+
+A structure designed for integration with configuration tools like Viper and validation libraries.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/licenses/MIT) for details.
+
+## Thanks
+
+Special thanks to the Go team for the `log/slog` package. For more details, visit:
+- [Go Documentation](https://pkg.go.dev/log/slog)
