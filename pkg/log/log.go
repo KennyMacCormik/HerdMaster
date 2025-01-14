@@ -1,6 +1,9 @@
 package log
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"sync"
@@ -18,72 +21,112 @@ var (
 		"warn":  4,
 		"error": 8,
 	}
-	logLevelVar     = new(slog.LevelVar)
-	singletonLogger *slog.Logger
-	loggerOnce      sync.Once
+	loggerMutex     sync.Mutex
+	singletonLogger loggerConfig = loggerConfig{
+		logLevelVar: new(slog.LevelVar),
+		level:       defaultLogLevel,
+		format:      defaultLogFormat,
+	}
 )
 
 type LoggerOption func(*loggerConfig)
 
 type loggerConfig struct {
-	level  string
-	format string
+	logLevelVar *slog.LevelVar
+	logger      *slog.Logger
+	level       string
+	format      string
+	output      io.Writer
 }
 
-// LoggingConfig is a structure ready for viper
+// LoggingConfig is a structure ready for viper and validator
 type LoggingConfig struct {
-	Format string `mapstructure:"log_format" validate:"oneof=text json"`            // HM_LOG_FORMAT. Default text
-	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"` // HM_LOG_LEVEL. Default info
+	Format string `mapstructure:"log_format" validate:"oneof=text json"`            // LOG_FORMAT. Default text
+	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"` // LOG_LEVEL. Default info
 }
 
-// GetLogger provides a singleton logger instance with specified level and format.
-func GetLogger(level, format string) *slog.Logger {
-	loggerOnce.Do(func() {
-		singletonLogger = newLogger(level, format)
-	})
-	return singletonLogger
+// GetLogger returns current logger.
+// If no call of SetLogger was invoked before GetLogger, GetLogger will init logger with default settings.
+func GetLogger() (*slog.Logger, error) {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+	if singletonLogger.logger == nil {
+		return initLogger()
+	}
+	return singletonLogger.logger, nil
 }
 
-// newLogger creates a new logger with the specified level and format.
-// Falls back to the default logger if validation fails.
-func newLogger(level, format string) *slog.Logger {
-	if validateLoggingConf(level, format) {
-		lg := newLoggerWithConf(level, format)
-		return lg
-	} else {
-		lg := DefaultLogger()
-		lg.Info("config validation failed, running logger with default values", "level", defaultLogLevel, "format", defaultLogFormat)
-		return lg
+// ConfigureLogger sets config to logger.
+func ConfigureLogger(options ...LoggerOption) (*slog.Logger, error) {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+	return initLogger(options...)
+}
+
+// initLoggerWithLock always returns working *slog.Logger.
+// Error indicates issues with supplied conf.
+// In any case, there is a fallback mechanism so you can start using logger right away
+func initLogger(option ...LoggerOption) (*slog.Logger, error) {
+	for _, opt := range option {
+		opt(&singletonLogger)
+	}
+	l, f, err := validateAndNormalizeLoggingConf(singletonLogger.level, singletonLogger.format)
+	singletonLogger.logger = newLoggerWithConf(l, f)
+	return singletonLogger.logger, err
+}
+
+// WithDefault sets the logger to use the default configuration.
+func WithDefault() LoggerOption {
+	return func(cfg *loggerConfig) {
+		cfg.level = defaultLogLevel
+		cfg.format = defaultLogFormat
 	}
 }
 
-// DefaultLogger returns a logger with the default configuration (info level, JSON format).
-func DefaultLogger() *slog.Logger {
-	return newLoggerWithConf(defaultLogLevel, defaultLogFormat)
+// WithConfig allows specifying the level and format for the logger.
+func WithConfig(level, format string) LoggerOption {
+	return func(cfg *loggerConfig) {
+		cfg.level = level
+		cfg.format = format
+	}
 }
 
-// validateLoggingConf validates the provided level and format.
-func validateLoggingConf(level, format string) bool {
-	if level != "debug" &&
-		level != "info" &&
-		level != "warn" &&
-		level != "error" {
-		return false
+// WithOutput allows you to change log output. In case output == nil falls back to os.Stdout.
+func WithOutput(output io.Writer) LoggerOption {
+	return func(cfg *loggerConfig) {
+		if output != nil {
+			cfg.output = output
+		}
 	}
-	if format != "text" &&
-		format != "json" {
-		return false
+}
+
+// validateAndNormalizeLoggingConf validates the provided level and format.
+func validateAndNormalizeLoggingConf(level, format string) (string, string, error) {
+	var errLevel, errFormat error
+	resultLevel, resultFormat := level, format
+	if _, ok := logLevelMap[resultLevel]; !ok {
+		errLevel = fmt.Errorf("invalid log level %s", level)
+		resultLevel = defaultLogLevel
 	}
-	return true
+	if format != "text" && format != "json" {
+		errFormat = fmt.Errorf("invalid log format %s", format)
+		resultFormat = defaultLogFormat
+	}
+	return resultLevel, resultFormat, errors.Join(errLevel, errFormat)
 }
 
 // newLoggerWithConf creates a logger with the specified level and format.
 func newLoggerWithConf(level, format string) *slog.Logger {
-	logLevelVar.Set(logLevelMap[level])
-
-	if format == "text" {
-		return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevelVar}))
+	output := singletonLogger.output
+	if output == nil {
+		output = os.Stdout // Default to stdout
 	}
 
-	return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevelVar}))
+	singletonLogger.logLevelVar.Set(logLevelMap[level])
+
+	if format == "text" {
+		return slog.New(slog.NewTextHandler(output, &slog.HandlerOptions{Level: singletonLogger.logLevelVar}))
+	}
+
+	return slog.New(slog.NewJSONHandler(output, &slog.HandlerOptions{Level: singletonLogger.logLevelVar}))
 }
