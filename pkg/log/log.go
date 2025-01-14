@@ -46,13 +46,6 @@ type loggerConfig struct {
 	output      io.Writer
 }
 
-// LoggingConfig is a structure designed for integration with viper and validation libraries.
-// It provides the fields necessary for external configuration.
-type LoggingConfig struct {
-	Format string `mapstructure:"log_format" validate:"oneof=text json"`            // LOG_FORMAT. Default text
-	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"` // LOG_LEVEL. Default info
-}
-
 // GetLogger returns the current logger instance. If the logger is uninitialized,
 // it creates a logger with the default settings.
 //
