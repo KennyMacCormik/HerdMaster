@@ -124,5 +124,5 @@ type HttpConfig struct {
 	ReadTimeout     time.Duration `mapstructure:"http_read_timeout" validate:"min=100ms,max=1s"`
 	WriteTimeout    time.Duration `mapstructure:"http_write_timeout" validate:"min=100ms,max=1s"`
 	IdleTimeout     time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=1s"`
-	ShutdownTimeout time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=30s"`
+	ShutdownTimeout time.Duration `mapstructure:"http_shutdown_timeout" validate:"min=100ms,max=30s"`
 }
