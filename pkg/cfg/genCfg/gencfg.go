@@ -100,26 +100,29 @@ type LoggingConfig struct {
 }
 
 // HttpConfig represents the configuration for an HTTP server.
-// It provides flexible settings for the server's host, port, and various timeout values.
+// It provides flexible settings for the server's host, port, timeouts, and shutdown behavior.
 // All fields are validated to ensure proper configuration.
 //
 // Fields:
 //   - Host: Specifies the IP address or hostname of the HTTP server.
-//     Validates as either an IPv4 address or a hostname compliant with RFC1123.
-//     This field is required.
+//   - Validates as either an IPv4 address or a hostname compliant with RFC1123.
+//   - This field is required.
 //   - Port: Specifies the port number for the HTTP server.
-//     Validates as a numeric value between 1025 and 65 535 (exclusive).
-//     This field is required.
+//   - Validates as a numeric value between 1025 and 65,535 (exclusive).
+//   - This field is required.
 //   - ReadTimeout: Specifies the maximum duration for reading the entire request, including the body.
-//     Validates as a duration between 100 ms and 1 s (inclusive).
+//   - Validates as a duration between 100 ms and 1 s (inclusive).
 //   - WriteTimeout: Specifies the maximum duration before timing out a write of the response.
-//     Validates as a duration between 100 ms and 1 s (inclusive).
+//   - Validates as a duration between 100 ms and 1 s (inclusive).
 //   - IdleTimeout: Specifies the maximum amount of time to wait for the next request when keep-alives are enabled.
-//     Validates as a duration between 100 ms and 1 s (inclusive).
+//   - Validates as a duration between 100 ms and 1 s (inclusive).
+//   - ShutdownTimeout: Specifies the maximum duration to wait for active connections to close gracefully during shutdown.
+//   - Validates as a duration between 100 ms and 30 s (inclusive).
 type HttpConfig struct {
-	Host         string        `mapstructure:"http_host" validate:"ip4_addr|hostname_rfc1123,required"`
-	Port         int           `mapstructure:"http_port" validate:"numeric,gt=1024,lt=65536,required"`
-	ReadTimeout  time.Duration `mapstructure:"http_read_timeout" validate:"min=100ms,max=1s"`
-	WriteTimeout time.Duration `mapstructure:"http_write_timeout" validate:"min=100ms,max=1s"`
-	IdleTimeout  time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=1s"`
+	Host            string        `mapstructure:"http_host" validate:"ip4_addr|hostname_rfc1123,required"`
+	Port            int           `mapstructure:"http_port" validate:"numeric,gt=1024,lt=65536,required"`
+	ReadTimeout     time.Duration `mapstructure:"http_read_timeout" validate:"min=100ms,max=1s"`
+	WriteTimeout    time.Duration `mapstructure:"http_write_timeout" validate:"min=100ms,max=1s"`
+	IdleTimeout     time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=1s"`
+	ShutdownTimeout time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=30s"`
 }
