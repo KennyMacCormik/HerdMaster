@@ -74,11 +74,15 @@
 // validate, and use a predefined configuration struct for gRPC settings.
 package genCfg
 
+import "time"
+
 // GrpcConfig represents the configuration for gRPC servers.
-// Host: The IP address or hostname of the gRPC server.
-// Validates as IPv4 or hostname (RFC1123).
-// Port: The port number for the gRPC server.
-// Validates as a numeric value between 1025 and 65 535 (exclusive).
+//
+// Fields:
+//   - Host: The IP address or hostname of the gRPC server.
+//     Validates as IPv4 or hostname (RFC1123).
+//   - Port: The port number for the gRPC server.
+//     Validates as a numeric value between 1025 and 65 535 (exclusive).
 type GrpcConfig struct {
 	Host string `mapstructure:"grpc_host" validate:"ip4_addr|hostname_rfc1123,required"`
 	Port int    `mapstructure:"grpc_port" validate:"numeric,gt=1024,lt=65536,required"`
@@ -86,9 +90,36 @@ type GrpcConfig struct {
 
 // LoggingConfig represents the configuration for logging systems.
 // In particular, log package from this repo.
-// Format: Specifies the log format, either "text" or "json".
-// Level: Specifies the log level, which must be one of "debug", "info", "warn", or "error".
+//
+// Fields:
+//   - Format: Specifies the log format, either "text" or "json".
+//   - Level: Specifies the log level, which must be one of "debug", "info", "warn", or "error".
 type LoggingConfig struct {
 	Format string `mapstructure:"log_format" validate:"oneof=text json"`
 	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"`
+}
+
+// HttpConfig represents the configuration for an HTTP server.
+// It provides flexible settings for the server's host, port, and various timeout values.
+// All fields are validated to ensure proper configuration.
+//
+// Fields:
+//   - Host: Specifies the IP address or hostname of the HTTP server.
+//     Validates as either an IPv4 address or a hostname compliant with RFC1123.
+//     This field is required.
+//   - Port: Specifies the port number for the HTTP server.
+//     Validates as a numeric value between 1025 and 65 535 (exclusive).
+//     This field is required.
+//   - ReadTimeout: Specifies the maximum duration for reading the entire request, including the body.
+//     Validates as a duration between 100 ms and 1 s (inclusive).
+//   - WriteTimeout: Specifies the maximum duration before timing out a write of the response.
+//     Validates as a duration between 100 ms and 1 s (inclusive).
+//   - IdleTimeout: Specifies the maximum amount of time to wait for the next request when keep-alives are enabled.
+//     Validates as a duration between 100 ms and 1 s (inclusive).
+type HttpConfig struct {
+	Host         string        `mapstructure:"http_host" validate:"ip4_addr|hostname_rfc1123,required"`
+	Port         int           `mapstructure:"http_port" validate:"numeric,gt=1024,lt=65536,required"`
+	ReadTimeout  time.Duration `mapstructure:"http_read_timeout" validate:"min=100ms,max=1s"`
+	WriteTimeout time.Duration `mapstructure:"http_write_timeout" validate:"min=100ms,max=1s"`
+	IdleTimeout  time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=1s"`
 }
