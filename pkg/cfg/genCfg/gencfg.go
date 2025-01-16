@@ -81,7 +81,7 @@ package genCfg
 // Validates as a numeric value between 1025 and 65 535 (exclusive).
 type GrpcConfig struct {
 	Host string `mapstructure:"grpc_host" validate:"ip4_addr|hostname_rfc1123,required"`
-	Port string `mapstructure:"grpc_port" validate:"numeric,gt=1024,lt=65536,required"`
+	Port int    `mapstructure:"grpc_port" validate:"numeric,gt=1024,lt=65536,required"`
 }
 
 // LoggingConfig represents the configuration for logging systems.
