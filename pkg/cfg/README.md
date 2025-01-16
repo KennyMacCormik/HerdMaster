@@ -1,31 +1,34 @@
-# cfg Package
+
+# README.md
 
 ## Overview
 
-The `cfg` package is a flexible and extensible configuration management system that integrates with the Viper library. It provides an easy-to-use API for registering configuration structs, binding environment variables, and setting default values dynamically.
+The `cfg` package provides a robust and extensible configuration management system that seamlessly integrates with Viper.
+This package allows applications to register and manage custom configuration structs, bind them to environment variables,
+and set dynamic defaults. It is part of the HerdMaster repository and ensures centralized and reusable configuration management
+across all microservices.
 
 ## Features
 
-- Seamless integration with the [Viper](https://github.com/spf13/viper) library for configuration management.
-- Support for dynamic registration of configuration structs.
-- Environment variable binding and default value management.
-- Thread-safe operations using synchronization primitives.
-- Support for custom validation of configuration fields.
+- **Custom Configuration Registration**: Register custom structs with specific environment variable bindings.
+- **Dynamic Defaults**: Provides default values when environment variables are unset.
+- **Thread-Safe Design**: Ensures safe concurrent access and updates to configurations.
+- **Functional Options**: Customize Viper’s initialization via functional options.
+- **Validation Ready**: Ensures all configurations adhere to validation rules using the `val` package.
 
 ## Installation
 
 ### Dependencies Installation
 
-To use this package, you need to install its dependencies:
+Ensure that the Viper library is installed:
 
 ```bash
 go get github.com/spf13/viper
-go get github.com/stretchr/testify
 ```
 
 ### Package Installation
 
-Install the `cfg` package directly in your Go project:
+Install the `cfg` package:
 
 ```bash
 go get github.com/KennyMacCormik/HerdMaster/pkg/cfg
@@ -33,149 +36,112 @@ go get github.com/KennyMacCormik/HerdMaster/pkg/cfg
 
 ## Usage
 
-Below is an example of how to use the `cfg` package to manage configurations in your project:
+Below is an example demonstrating the use of the `cfg` package:
 
 ```go
 package main
 
 import (
-	"fmt"
-	"github.com/KennyMacCormik/HerdMaster/pkg/cfg"
+    "fmt"
+    "github.com/KennyMacCormik/HerdMaster/pkg/cfg"
 )
 
+// LoggingConfig represents the configuration for logging.
 type LoggingConfig struct {
-	Format string `mapstructure:"log_format" validate:"oneof=text json"`
-	Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"`
+    Format string `mapstructure:"log_format" validate:"oneof=text json"`            // LOG_FORMAT. Default text
+    Level  string `mapstructure:"log_level" validate:"oneof=debug info warn error"` // LOG_LEVEL. Default info
 }
 
 func main() {
-	entry := cfg.ConfigEntry{
-		Config: &LoggingConfig{},
-		BindArray: []cfg.BindValue{
-			{ValName: "log_format"},
-			{ValName: "log_level", DefaultVal: "info"},
-		},
-	}
+    // Define a configuration entry for the logging system
+    entry := cfg.ConfigEntry{
+        Config: &LoggingConfig{}, // Struct for logging configuration
+        BindArray: []cfg.BindValue{
+            {
+                ValName: "log_format", // Environment variable name
+            },
+            {
+                ValName:    "log_level", // Environment variable name
+                DefaultVal: "info",      // Default value if environment variable is not set
+            },
+        },
+    }
 
-	if err := cfg.RegisterConfig("log", entry); err != nil {
-		fmt.Printf("Error registering config: %v
-", err)
-		return
-	}
+    // Register the logging configuration
+    if err := cfg.RegisterConfig("log", entry); err != nil {
+        fmt.Printf("Error registering config: %v\n", err)
+        return
+    }
 
-	if err := cfg.NewConfig(); err != nil {
-		fmt.Printf("Error initializing configs: %v
-", err)
-		return
-	}
+    // Initialize all registered configurations
+    if err := cfg.NewConfig(); err != nil {
+        fmt.Printf("Error initializing configs: %v\n", err)
+        return
+    }
 
-	logConfig, ok := cfg.GetConfig("log")
-	if !ok {
-		fmt.Println("Failed to retrieve the logging config.")
-		return
-	}
+    // Access the initialized configuration
+    logConfig, ok := cfg.GetConfig("log")
+    if !ok {
+        fmt.Println("Failed to retrieve the logging config.")
+        return
+    }
 
-	if typedConfig, ok := logConfig.(*LoggingConfig); ok {
-		fmt.Printf("Initialized Logging Config: %+v
-", typedConfig)
-	} else {
-		fmt.Println("Failed to type assert logging config.")
-	}
+    // Type assert to the specific configuration struct
+    if typedConfig, ok := logConfig.(*LoggingConfig); ok {
+        fmt.Printf("Initialized Logging Config: %+v\n", typedConfig)
+    } else {
+        fmt.Println("Failed to type assert logging config.")
+    }
 }
 ```
 
 ## API Documentation
 
-### `RegisterConfig`
+### Type Descriptions
 
-Registers a configuration struct and its associated bindings.
+#### `type ConfigEntry`
+- Represents a registered configuration entry.
+- **Fields**:
+    - `Config any`: The configuration struct to be registered.
+    - `BindArray []BindValue`: A list of environment variable bindings.
 
-```go
-func RegisterConfig(name string, configStruct ConfigEntry) error
-```
+#### `type BindValue`
+- Represents a binding of an environment variable to a configuration field.
+- **Fields**:
+    - `ValName string`: The environment variable name.
+    - `DefaultVal any`: The default value for the environment variable.
 
-### `NewConfig`
+#### `type ViperOption`
+- A functional option for customizing Viper’s behavior.
+- **Example**:
+  ```go
+  func WithSetEnvPrefix(prefix string) ViperOption {
+      // Logic for setting prefix
+  }
+  ```
 
-Initializes the configuration system, binds all registered entries, and loads their values from the environment.
+### Exported Functions
 
-```go
-func NewConfig() error
-```
+#### `func RegisterConfig(name string, configStruct ConfigEntry) error`
+Registers a custom configuration struct.
 
-### `ListConfigs`
-
+#### `func ListConfigs() []string`
 Returns a list of all registered configuration names.
 
-```go
-func ListConfigs() []string
-```
-
-### `GetConfig`
-
+#### `func GetConfig(name string) (any, bool)`
 Retrieves a registered configuration struct by name.
 
-```go
-func GetConfig(name string) (any, bool)
-```
+#### `func NewConfig(list ...ViperOption) error`
+Initializes the configuration system and applies functional options.
 
-### Internal Functions
-
-#### `validateConfigStruct`
-
-Validates that the `Config` field of a `ConfigEntry` is a pointer to a struct.
-
-#### `bindActualValue`
-
-Binds environment variables and unmarshals values into a configuration struct.
-
-## Type Descriptions
-
-### `ConfigEntry`
-
-Represents a configuration entry, including the struct and associated bindings.
-
-```go
-type ConfigEntry struct {
-	Config    any
-	BindArray []BindValue
-}
-```
-
-### `BindValue`
-
-Represents a single binding of an environment variable to a configuration field, with an optional default value.
-
-```go
-type BindValue struct {
-	ValName    string
-	DefaultVal any
-}
-```
-
-## var Descriptions
-
-### `configEntries`
-
-Holds all registered configuration entries.
-
-```go
-var configEntries = make(map[string]ConfigEntry)
-```
-
-### `mtx`
-
-Provides a mutex for thread-safe operations.
-
-```go
-var mtx sync.RWMutex
-```
+#### `func WithSetEnvPrefix(EnvPrefix string) ViperOption`
+Sets the environment variable prefix for Viper.
 
 ## License
 
-This project is licensed under the MIT License. For more details, see [MIT License](https://opensource.org/licenses/MIT).
+This package is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Thanks
 
 Special thanks to:
-- [Viper](https://github.com/spf13/viper) for providing a robust configuration management library.
-- [Testify](https://github.com/stretchr/testify) for simplifying unit testing.
+- The [Viper library](https://github.com/spf13/viper) maintainers for providing an excellent configuration management tool.

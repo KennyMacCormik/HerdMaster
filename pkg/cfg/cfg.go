@@ -68,8 +68,6 @@ import (
 	"sync"
 )
 
-const viperPrefix = "hm"
-
 var (
 	configEntries = make(map[string]ConfigEntry)
 	mtx           sync.RWMutex
@@ -90,13 +88,49 @@ type BindValue struct {
 	DefaultVal any    // Default value for the environment variable
 }
 
+// ViperOption represents a functional option for configuring the behavior of Viper.
+// It allows for customizing Viper's initialization, such as setting environment variable prefixes.
+// This enables flexible configuration adjustments without altering the core logic.
+type ViperOption func() error
+
 // NewConfig initializes the configuration system, binds all registered configuration entries,
 // and loads their values from environment variables.
-func NewConfig() error {
-	viper.SetEnvPrefix(viperPrefix)
+func NewConfig(list ...ViperOption) error {
+	for _, opt := range list {
+		err := opt()
+		if err != nil {
+			return err
+		}
+	}
+
 	viper.AutomaticEnv()
 
 	return newConfigWithLock()
+}
+
+// WithSetEnvPrefix sets the environment variable prefix for Viper.
+// It ensures that all environment variables bound to the configuration entries
+// will use the specified prefix, enabling namespacing and avoiding conflicts with other environment variables.
+// EnvPrefix can't be empty string.
+//
+// Example Usage:
+//
+//	err := cfg.NewConfig(cfg.WithSetEnvPrefix("myapp"))
+//	if err != nil {
+//	    fmt.Printf("Error initializing configs: %v\n", err)
+//	}
+//
+// In this example, Viper will look for environment variables prefixed with "MYAPP_".
+func WithSetEnvPrefix(EnvPrefix string) ViperOption {
+	if EnvPrefix == "" {
+		return func() error {
+			return fmt.Errorf("incorrect env prefix: %s", EnvPrefix)
+		}
+	}
+	return func() error {
+		viper.SetEnvPrefix(EnvPrefix)
+		return nil
+	}
 }
 
 // newConfigWithLock acquires a write lock and iterates through all registered configuration entries
