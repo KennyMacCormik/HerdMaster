@@ -86,7 +86,7 @@ The logger returned by `ConfigureLogger` **must be saved** and used for logging.
 func GetLogger() (*slog.Logger, error)
 ```
 
-Returns the current logger instance. If the logger is uninitialized, it creates one with the default settings.
+Returns the current logger instance. If the logger is uninitialized, it creates one with the default settings. It is guaranteed to be safe to ignore error returned by GetLogger.
 
 #### `ConfigureLogger(options ...LoggerOption) (*slog.Logger, error)`
 

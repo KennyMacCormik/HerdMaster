@@ -73,8 +73,8 @@ func TestWithOutput_NilFallbackToStdout(t *testing.T) {
 	r, w, _ := os.Pipe()
 	defer func() {
 		os.Stdout = oldStdout
-		r.Close()
-		w.Close()
+		_ = r.Close()
+		_ = w.Close()
 	}()
 
 	os.Stdout = w

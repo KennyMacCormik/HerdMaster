@@ -48,6 +48,7 @@ type loggerConfig struct {
 
 // GetLogger returns the current logger instance. If the logger is uninitialized,
 // it creates a logger with the default settings.
+// It is guaranteed to be safe to ignore error returned by GetLogger.
 //
 // Note: This method ensures the logger is always usable even without prior configuration.
 func GetLogger() (*slog.Logger, error) {
