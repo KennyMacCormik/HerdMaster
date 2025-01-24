@@ -223,7 +223,23 @@ func (t *ttlCache) deleteExpiredKey(key string) {
 	const wrap = "ttlCache/deleteExpiredKey"
 	ctx, cancel := context.WithTimeout(context.Background(), t.deleteExpiredKeysTTL)
 	defer cancel()
-	err := t.impl.Delete(ctx, key)
+	// TODO: add logging
+	// presumably always succeed
+	val, err := t.impl.Get(ctx, key)
+	if err != nil {
+		return
+	}
+	// might fail
+	castedValue, ok := val.(*cacheEntry)
+	if !ok {
+		return
+	}
+	// return if entry not expired
+	if !ttlExpired(castedValue.ExpiresAt) {
+		return
+	}
+	// actually delete entry
+	err = t.impl.Delete(ctx, key)
 	if err != nil {
 		t.lg.Error(fmt.Sprintf("%s: failed to delete key", wrap), "key", key, "err", err)
 	}
