@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+// TODO: add test that TTL works as expected
+
 func getTtlCacheMock(t *testing.T, opts ...InitOptions) (*mockCache.MockInterface, cache.Interface) {
 	c := mockCache.NewMockInterface(t)
 
