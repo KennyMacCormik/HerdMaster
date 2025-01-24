@@ -125,6 +125,7 @@ func (t *ttlCache) Get(ctx context.Context, key string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	castedValue, ok := val.(*cacheEntry)
 	if !ok {
 		err = cache.NewErrTypeCastFailed(key, val, wrap)
