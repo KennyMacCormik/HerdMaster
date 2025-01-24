@@ -42,11 +42,13 @@ func NewShardedCache(initFn func() cache.Interface, opts ...InitOptions) (cache.
 		return nil, err
 	}
 
-	s := &shardedCache{shardNumber: defaultShardNumber, shards: make([]cache.Interface, 0, defaultShardNumber)}
+	s := &shardedCache{shardNumber: defaultShardNumber}
 
 	for _, opt := range opts {
 		opt(s)
 	}
+
+	s.shards = make([]cache.Interface, 0, s.shardNumber)
 
 	for i := 0; i < s.shardNumber; i++ {
 		shard := initFn()
@@ -150,7 +152,7 @@ func (s *shardedCache) GetLength() (int, error) {
 func (s *shardedCache) getShardedCacheLen() (int, error) {
 	const wrap = "ttlCache/getShardedCacheLen"
 	var i int
-	for shardNum, _ := range s.shards {
+	for shardNum := range s.shards {
 		num, err := s.shards[shardNum].GetLength()
 		if err != nil {
 			return 0, fmt.Errorf("%s: shard %d :%w", wrap, shardNum, err)

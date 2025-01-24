@@ -84,10 +84,10 @@ func TestWithOutput_NilFallbackToStdout(t *testing.T) {
 	assert.NotNil(t, logger, "expected logger instance to be non-nil")
 
 	logger.Info("Stdout message")
-	w.Close()
+	_ = w.Close()
 
 	out := &bytes.Buffer{}
-	io.Copy(out, r)
+	_, _ = io.Copy(out, r)
 	assert.Contains(t, out.String(), "Stdout message", "expected log message to be written to stdout")
 }
 
