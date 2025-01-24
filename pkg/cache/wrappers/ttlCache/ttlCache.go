@@ -135,7 +135,7 @@ func (t *ttlCache) Get(ctx context.Context, key string) (any, error) {
 		return nil, NewErrTimeout(key, wrap, castedValue.ExpiresAt)
 	}
 
-	return val.(*cacheEntry).Value, nil
+	return castedValue.Value, nil
 }
 
 func (t *ttlCache) Set(ctx context.Context, key string, value any) error {
