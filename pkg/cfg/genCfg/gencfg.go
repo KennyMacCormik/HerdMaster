@@ -126,3 +126,47 @@ type HttpConfig struct {
 	IdleTimeout     time.Duration `mapstructure:"http_idle_timeout" validate:"min=100ms,max=1s"`
 	ShutdownTimeout time.Duration `mapstructure:"http_shutdown_timeout" validate:"min=100ms,max=30s"`
 }
+
+// OtelConfig represents the configuration for OpenTelemetry (OTel) tracing systems.
+// It provides essential settings to configure the OTel exporter and shutdown behavior.
+//
+// Fields:
+//   - Endpoint: Specifies the URL of the OTel exporter endpoint (e.g., OTLP HTTP/JSON).
+//     Validates as a valid URL and is a required field.
+//   - ShutdownTimeout: Specifies the maximum duration to wait for graceful shutdown of the tracing system.
+//     Validates as a duration between 100 ms and 30 s (inclusive).
+//
+// Usage:
+// This struct is designed to integrate seamlessly with the `cfg` and `val` packages for centralized
+// configuration management and validation.
+// It enables robust setup and shutdown of Otel tracing in microservices.
+type OtelConfig struct {
+	Endpoint        string        `mapstructure:"otel_endpoint" validate:"url,required"`
+	ShutdownTimeout time.Duration `mapstructure:"otel_shutdown_timeout" validate:"min=100ms,max=30s"`
+}
+
+// RateLimiterConfig represents the configuration for a rate-limiting middleware.
+// It provides parameters to manage the maximum number of concurrent requests, waiting requests,
+// and the retry-after duration for throttled requests.
+//
+// Fields:
+//   - MaxRunning: Specifies the maximum number of concurrent requests allowed.
+//     Validates as a numeric value between 1 and 100,000 (inclusive).
+//     This field is required.
+//   - MaxWait: Specifies the maximum number of requests allowed to wait for processing
+//     when the MaxRunning limit is reached.
+//     Validates as a numeric value between 1 and 100,000 (inclusive).
+//     This field is required.
+//   - RetryAfter: Specifies the `Retry-After` header value in seconds when a request
+//     is rejected due to rate limiting.
+//     Validates as a numeric value between 1 and 3,600 seconds (inclusive).
+//
+// Usage:
+// This struct is designed to integrate seamlessly with the `cfg` and `val` packages for centralized
+// configuration management and validation. It allows robust setup of rate-limiting middleware
+// to ensure application scalability and fair resource usage.
+type RateLimiterConfig struct {
+	MaxRunning int `mapstructure:"rate_limiter_max_conn" validate:"min=1,max=100000"`
+	MaxWait    int `mapstructure:"rate_limiter_max_wait" validate:"min=1,max=100000"`
+	RetryAfter int `mapstructure:"rate_limiter_retry_after" validate:"min=1,max=3600"`
+}
