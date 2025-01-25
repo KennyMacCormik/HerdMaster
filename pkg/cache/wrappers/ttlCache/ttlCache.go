@@ -227,11 +227,13 @@ func (t *ttlCache) deleteExpiredKey(key string) {
 	// presumably always succeed
 	val, err := t.impl.Get(ctx, key)
 	if err != nil {
+		t.lg.Error(fmt.Sprintf("%s: failed to get key: %s", wrap, key), "key", key, "err", err)
 		return
 	}
 	// might fail
 	castedValue, ok := val.(*cacheEntry)
 	if !ok {
+		t.lg.Error(fmt.Sprintf("%s: failed to type cast: key [%s]", wrap, key), "key", key, "err", err)
 		return
 	}
 	// return if entry not expired

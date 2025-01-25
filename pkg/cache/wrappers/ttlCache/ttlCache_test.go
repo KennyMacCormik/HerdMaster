@@ -239,7 +239,7 @@ func TestTtlCache_Get(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		value1 := cacheEntry{"value1", time.Now().Add(10 * time.Second)}
 		c, ttl := getTtlCacheMock(t)
-		c.EXPECT().Get(mock.Anything, "key1").Return(value1, nil)
+		c.EXPECT().Get(mock.Anything, "key1").Return(&value1, nil)
 		val, err := ttl.Get(context.Background(), "key1")
 		require.NoError(t, err, "expect no error with default configuration")
 		assert.Equal(t, value1.Value, val, "expect result and value match")
@@ -257,7 +257,7 @@ func TestTtlCache_Get(t *testing.T) {
 	t.Run("expired", func(t *testing.T) {
 		value1 := cacheEntry{"value1", time.Now().Add(-10 * time.Second)}
 		c, ttl := getTtlCacheMock(t)
-		c.EXPECT().Get(mock.Anything, "key1").Return(value1, nil)
+		c.EXPECT().Get(mock.Anything, "key1").Return(&value1, nil)
 		val, err := ttl.Get(context.Background(), "key1")
 		require.Error(t, err, "expect err with expired record")
 		assert.Nil(t, val, "expect nil result with error")
@@ -471,6 +471,13 @@ func TestTtlCache_ExpireCache(t *testing.T) {
 	t.Run("expireCache runs and stops gracefully", func(t *testing.T) {
 		c, ttl := getTtlCacheMock(t, WithOverrideDefaults(3*time.Second, 500*time.Millisecond, 1*time.Second, 100*time.Millisecond, 10))
 		c.EXPECT().GetKeys(mock.Anything).Return([]string{"key1"}, nil)
+		c.EXPECT().Get(mock.Anything, "key1").Return(
+			&cacheEntry{
+				"expiredValue",
+				time.Now().Add(1 * time.Second),
+			},
+			nil,
+		)
 		c.EXPECT().Delete(mock.Anything, "key1").Return(nil)
 		c.EXPECT().Close(mock.Anything).Return(nil).Once()
 
@@ -496,6 +503,13 @@ func TestTtlCache_DeleteExpiredKey(t *testing.T) {
 
 		lg, _ := log.ConfigureLogger(log.WithOutput(w))
 		c, ttl := getTtlCacheMock(t, WithLogger(lg))
+		c.EXPECT().Get(mock.Anything, "expiredKey").Return(
+			&cacheEntry{
+				"expiredValue",
+				time.Now().Add(-5 * time.Second),
+			},
+			nil,
+		).Once()
 		c.EXPECT().Delete(mock.Anything, "expiredKey").Return(nil).Once()
 
 		cacheImpl := typeAssertion(t, ttl)
@@ -517,7 +531,7 @@ func TestTtlCache_DeleteExpiredKey(t *testing.T) {
 
 		lg, _ := log.ConfigureLogger(log.WithOutput(w))
 		c, ttl := getTtlCacheMock(t, WithLogger(lg))
-		c.EXPECT().Delete(mock.Anything, "failedKey").Return(assert.AnError).Once()
+		c.EXPECT().Get(mock.Anything, "failedKey").Return(nil, assert.AnError).Once()
 
 		cacheImpl := typeAssertion(t, ttl)
 		cacheImpl.deleteExpiredKey("failedKey")

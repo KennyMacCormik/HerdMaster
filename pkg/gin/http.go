@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	router "github.com/KennyMacCormik/HerdMaster/pkg/gin/factory"
+	"github.com/KennyMacCormik/HerdMaster/pkg/gin/router"
 	"net/http"
 	"time"
 )

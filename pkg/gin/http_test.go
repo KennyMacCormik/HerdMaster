@@ -1,9 +1,9 @@
 package http
 
 import (
+	"github.com/KennyMacCormik/HerdMaster/pkg/gin/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"jaeger-api/internal/http/router"
 	"net/http"
 	"testing"
 	"time"
