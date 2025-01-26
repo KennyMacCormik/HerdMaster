@@ -78,10 +78,32 @@ func (v *validatorStruct) ValidateStruct(s any) error {
 	return nil
 }
 
+// TODO: add unit tests for new validations
+
+// addCustomValidators registers custom validation rules with the validator instance.
+//
+// Custom Validators:
+// - "urlprefix": Validates that a string starts with "http://" or "https://".
+//
+// Parameters:
+// - v (*validator.Validate): The validator instance where custom validations will be registered.
+//
+// This function is intended to be called during validator initialization to
+// ensure the custom rules are consistently available across the application.
+func addCustomValidators(v *validator.Validate) {
+	fn := func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		return strings.HasPrefix(value, "http://") || strings.HasPrefix(value, "https://")
+	}
+	_ = v.RegisterValidation("urlprefix", fn)
+}
+
 // newValidator initializes and returns a new ValidatorStruct instance.
 // It configures the validator with required struct validation enabled.
 func newValidator() validatorStruct {
-	return validatorStruct{validator: validator.New(validator.WithRequiredStructEnabled())}
+	v := validatorStruct{validator: validator.New(validator.WithRequiredStructEnabled())}
+	addCustomValidators(v.validator)
+	return v
 }
 
 // validateStruct ensures the input is valid for struct validation.
