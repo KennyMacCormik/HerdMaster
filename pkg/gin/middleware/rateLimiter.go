@@ -35,6 +35,7 @@ func NewRateLimiter(maxRunning, maxWait, retryAfter int, lg *slog.Logger) *RateL
 }
 
 func (rm *RateLimiter) GetRateLimiter() gin.HandlerFunc {
+
 	return func(c *gin.Context) {
 		rm.total.Add(1)
 		defer rm.total.Add(-1)
