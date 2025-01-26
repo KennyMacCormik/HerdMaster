@@ -64,7 +64,7 @@ func (rm *RateLimiter) GetRateLimiter() gin.HandlerFunc {
 		}
 		reqLg := LogReq(c, uuid, rm.lg, true)
 		// Log the Trace ID
-		reqLg.Info("Request trace ID", "traceID", span.SpanContext().TraceID().String())
+		reqLg.Info("request trace ID", "traceID", span.SpanContext().TraceID().String())
 
 		if err != nil {
 			span.AddEvent(
