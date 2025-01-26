@@ -38,9 +38,13 @@ func (rm *RateLimiter) GetRateLimiter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rm.total.Add(1)
 		defer rm.total.Add(-1)
+		const (
+			traceName = "gin.middleware.GetRateLimiter"
+			spanName  = "rate limiting middleware"
+		)
 		// init trace
-		tracer := otel.Tracer("backend/GetRateLimiter")
-		ctx, span := tracer.Start(c.Request.Context(), "GetRateLimiter")
+		tracer := otel.Tracer(traceName)
+		ctx, span := tracer.Start(c.Request.Context(), spanName)
 		c.Request = c.Request.WithContext(ctx)
 		defer span.End()
 		defer func(span trace.Span) {

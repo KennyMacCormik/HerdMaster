@@ -36,8 +36,12 @@ func NewErrFallbackUuidUsed(msg string) *ErrFallbackUuidUsed {
 
 func RequestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tracer := otel.Tracer("backend/RequestIDMiddleware")
-		ctx, span := tracer.Start(c.Request.Context(), "RequestIDMiddleware")
+		const (
+			traceName = "gin.middleware.RequestIDMiddleware"
+			spanName  = "get request ID"
+		)
+		tracer := otel.Tracer(traceName)
+		ctx, span := tracer.Start(c.Request.Context(), spanName)
 		c.Request = c.Request.WithContext(ctx)
 		defer span.End()
 
