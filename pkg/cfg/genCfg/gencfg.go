@@ -141,7 +141,7 @@ type HttpConfig struct {
 // configuration management and validation.
 // It enables robust setup and shutdown of Otel tracing in microservices.
 type OtelConfig struct {
-	Endpoint        string        `mapstructure:"otel_endpoint" validate:"url,required"`
+	Endpoint        string        `mapstructure:"otel_endpoint" validate:"url,urlprefix,required"`
 	ShutdownTimeout time.Duration `mapstructure:"otel_shutdown_timeout" validate:"min=100ms,max=30s"`
 }
 
