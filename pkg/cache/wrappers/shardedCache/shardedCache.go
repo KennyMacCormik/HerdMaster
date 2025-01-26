@@ -64,7 +64,10 @@ func wrapCloser(closers ...func(ctx context.Context) error) func(ctx context.Con
 		var err error
 		for _, fn := range closers {
 			if fn != nil {
-				err = fmt.Errorf("%w: %w", err, fn(ctx))
+				err1 := fn(ctx)
+				if err1 != nil {
+					err = fmt.Errorf("%w: %w", err, err1)
+				}
 			}
 		}
 		return err

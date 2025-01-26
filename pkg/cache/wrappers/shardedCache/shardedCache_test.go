@@ -180,3 +180,5 @@ func TestShardedCache_GetShardNumber(t *testing.T) {
 		assert.Equal(t, fallbackShard, shard, "Empty key should default to fallback shard")
 	})
 }
+
+// TODO: add impl tests
